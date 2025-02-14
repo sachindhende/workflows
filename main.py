@@ -1,9 +1,11 @@
 import getpass
 import os
 import colorama
+import csv
 from colorama import Fore, Style
 from auth.user_auth import authenticate_user
-from database.product_db import create, read, update, delete, view_product
+from database.product_db import create_product, read_products, update_product, delete_product, view_product, export_products_to_csv, search_product
+from database.product_db import validate_part_id, validate_revision, validate_ecu_version, validate_checksum, validate_proto_number
 
 colorama.init(autoreset=True)  # Initialize colors
 
@@ -16,13 +18,13 @@ def show_workflows_management_menu(permissions):
     """Display the Workflows Menu after login."""
     while True:
         clear_screen()
-        print(f"\n{Fore.CYAN}===== Workflows Management System ====={Style.RESET_ALL}")
+        print(f"\n{Fore.CYAN}************************** Workflow Management System **************************{Style.RESET_ALL}")
 
         menu_options = {
             "1": ("🔄 Workflows", "workflows"),
             "2": ("📦 Products", "products"),
-            "3": ("⚙️ Settings", "settings"),
-            "4": ("🚪 Exit", None)
+            "7": ("⚙️ Settings", "settings"),
+            "9": ("🚪 Logout", None)
         }
 
         for key, (label, perm) in menu_options.items():
@@ -39,105 +41,47 @@ def show_workflows_management_menu(permissions):
             show_products_menu(permissions)
         elif choice == "3" and "settings" in permissions:
             print(f"{Fore.YELLOW}Settings (Coming soon!){Style.RESET_ALL}")
-        elif choice == "4":
+        elif choice == "9":           
             print(f"{Fore.YELLOW}Goodbye!{Style.RESET_ALL}")
+            clear_screen()
             break
         else:
             print(f"{Fore.RED}❌ Invalid choice! Please select from the menu.{Style.RESET_ALL}")
 
 
+def get_valid_input(prompt, validation_func, error_message):
+    """Continuously prompts the user until a valid input is given."""
+    while True:
+        value = input(prompt).strip()
+        if validation_func(value):
+            return value
+        print(f"{Fore.RED}{error_message}{Style.RESET_ALL}")
+
 def create_product_page():
-    """Dedicated page for creating a new product."""
+    """Dedicated page for creating a new product with validation loops."""
     clear_screen()
-    print(f"\n{Fore.CYAN}===== Create Product ====={Style.RESET_ALL}")
-
+    print(f"\n{Fore.CYAN}******************************** Create Product ********************************{Style.RESET_ALL}")
+    
     data = {
-        "product_name": input("Enter Product Name: "),
-        
-        "fg_part": input("Enter FG Part (SMxxxxxxx): "),
-        "fg_part_rev": input("Enter FG Part Revision (xxx.xx): "),
-
-        "pcb_part": input("Enter PCB Part (SMxxxxxxx): "),
-        "pcb_part_rev": input("Enter PCB Part Revision (xxx.xx): "),
-
-        "smd_top": input("Enter SMD Top (SMxxxxxxx): "),
-        "smd_top_rev": input("Enter SMD Top Revision (xxx.xx): "),
-
-        "smd_bottom": input("Enter SMD Bottom (SMxxxxxxx): "),
-        "smd_bottom_rev": input("Enter SMD Bottom Revision (xxx.xx): "),
-
-        "sw_wrapper": input("Enter SW Wrapper (SMxxxxxxx): "),
-        "sw_wrapper_rev": input("Enter SW Wrapper Revision (xxx.xx): "),
-
-        "ecu_version": input("Enter ECU Version (xx.xx.xx): "),
-        "checksum": input("Enter Checksum (xxxxxxxx): "),
-        "proto_number": input("Enter Proto Number (4-digit number): "),
-        "status": input("Enter Status (Proto/Released): "),
-        "remark": input("Enter Remark: ")
+        "product_name": input("Enter Product Name: ").strip(),
+        "fg_part": get_valid_input("Enter FG Part (SMxxxxxxx): ", validate_part_id, "Invalid FG Part! Must follow format 'SMxxxxxxx'."),
+        "fg_part_rev": get_valid_input("Enter FG Part Revision (xxx.xx): ", validate_revision, "Invalid revision format! Must follow 'xxx.xx'."),
+        "pcb_part": get_valid_input("Enter PCB Part (SMxxxxxxx): ", validate_part_id, "Invalid PCB Part! Must follow format 'SMxxxxxxx'."),
+        "pcb_part_rev": get_valid_input("Enter PCB Part Revision (xxx.xx): ", validate_revision, "Invalid revision format! Must follow 'xxx.xx'."),
+        "smd_top": get_valid_input("Enter SMD Top (SMxxxxxxx): ", validate_part_id, "Invalid SMD Top! Must follow format 'SMxxxxxxx'."),
+        "smd_top_rev": get_valid_input("Enter SMD Top Revision (xxx.xx): ", validate_revision, "Invalid revision format! Must follow 'xxx.xx'."),
+        "smd_bottom": get_valid_input("Enter SMD Bottom (SMxxxxxxx): ", validate_part_id, "Invalid SMD Bottom! Must follow format 'SMxxxxxxx'."),
+        "smd_bottom_rev": get_valid_input("Enter SMD Bottom Revision (xxx.xx): ", validate_revision, "Invalid revision format! Must follow 'xxx.xx'."),
+        "sw_wrapper": get_valid_input("Enter SW Wrapper (SMxxxxxxx): ", validate_part_id, "Invalid SW Wrapper! Must follow format 'SMxxxxxxx'."),
+        "sw_wrapper_rev": get_valid_input("Enter SW Wrapper Revision (xxx.xx): ", validate_revision, "Invalid revision format! Must follow 'xxx.xx'."),
+        "ecu_version": get_valid_input("Enter ECU Version (xx.xx.xx): ", validate_ecu_version, "Invalid ECU Version! Must follow format 'xx.xx.xx'."),
+        "checksum": get_valid_input("Enter Checksum (xxxxxxxx): ", validate_checksum, "Invalid Checksum! Must be 8-character hexadecimal."),
+        "proto_number": get_valid_input("Enter Proto Number (xxxx): ", validate_proto_number, "Invalid Proto Number! Must be 4-digit decimal."),
+        "status": input("Enter Status (Proto/Released): ").strip(),
+        "remark": input("Enter Remark: ").strip()
     }
+    create_product(data)
 
-    if create(data):
-        print(f"{Fore.GREEN}✅ Product created successfully!{Style.RESET_ALL}")
-    else:
-        print(f"{Fore.RED}❌ Product creation failed! Please try again.{Style.RESET_ALL}")
-
-def show_products_menu(permissions):
-    while True:
-        clear_screen()
-        print(f"\n{Fore.CYAN}===== Products Menu ====={Style.RESET_ALL}")
-        
-        menu_options = {
-            "1": ("🆕 Create", "create_product"),
-            "2": ("📜 View", "view_product"),
-            "3": ("✏️ Update", "update_product"),
-            "4": ("🗑️ Delete", "delete_product"),
-            "5": ("🔙 Back", None)
-        }
-
-        for key, (label, perm) in menu_options.items():
-            if perm is None or perm in permissions:
-                print(f"{Fore.GREEN}{key}. {label}{Style.RESET_ALL}")
-            else:
-                print(f"{Fore.RED}{key}. {label} (Restricted){Style.RESET_ALL}")
-
-        choice = input("Enter your choice: ")
-
-        if choice == "5":
-            return
-
-        if choice == "1" and "create_product" in permissions:
-            create_product_page()
-        elif choice == "2" and "view_product" in permissions:
-            show_view_options()
-        elif choice == "3" and "update_product" in permissions:
-            update_product()
-        elif choice == "4" and "delete_product" in permissions:
-            product_id = input("Enter Product ID to Delete: ")
-            delete(product_id)
-        else:
-            print(f"{Fore.RED}❌ Invalid choice!{Style.RESET_ALL}")
-
-def show_view_options():
-    """Displays the view options: View all products or view a single product by ID."""
-    while True:
-        clear_screen()
-        print(f"\n{Fore.CYAN}===== View Products ====={Style.RESET_ALL}")
-        
-        print(f"{Fore.GREEN}1. View All Products{Style.RESET_ALL}")
-        print(f"{Fore.GREEN}2. View Product by ID{Style.RESET_ALL}")
-        print(f"{Fore.RED}3. Back to Products Menu{Style.RESET_ALL}")
-
-        choice = input("Enter your choice: ")
-
-        if choice == "1":
-            read()
-        elif choice == "2":
-            product_id = input("Enter Product ID to View: ")
-            show_product_details(product_id)
-        elif choice == "3":
-            return
-        else:
-            print(f"{Fore.RED}❌ Invalid choice! Please enter a valid option.{Style.RESET_ALL}")
 
 def show_product_details(product_id):
     """Display product details with a Back option."""
@@ -148,7 +92,7 @@ def show_product_details(product_id):
         print(f"{Fore.RED}❌ Product not found!{Style.RESET_ALL}")
         return
 
-    print(f"\n{Fore.CYAN}====={product['product_name']}====={Style.RESET_ALL}")
+    print(f"\n{Fore.CYAN}******************************* {product['product_name']} *******************************{Style.RESET_ALL}")
 
     fields = [
         "ID", "FG Part", "FG Part Revision", "PCB Part", "PCB Part Revision", 
@@ -170,30 +114,57 @@ def show_product_details(product_id):
     print(f"\n{Fore.GREEN}Press any key to go Back to Product Menu...{Style.RESET_ALL}")
     input()
 
-def update_product():
-    """Handles updating a product."""
-    product_id = input("Enter Product ID to Update: ")
-    print("\nFields that can be updated:")
-    update_fields = [
-        "product_name", "fg_part", "fg_part_rev", "pcb_part", "pcb_part_rev",
-        "smd_top", "smd_top_rev", "smd_bottom", "smd_bottom_rev",
-        "sw_wrapper", "sw_wrapper_rev", "ecu_version", "checksum",
-        "proto_number", "status", "remark"
-    ]
-    for field in update_fields:
-        print(f"- {field}")
 
-    field = input("Enter Field to Update: ").strip()
-    if field not in update_fields:
-        print(f"{Fore.RED}❌ Invalid field selected!{Style.RESET_ALL}")
-        return
+def show_products_menu(permissions):
+    while True:
+        clear_screen()
+        print(f"\n{Fore.CYAN}****************************** Product Management ******************************{Style.RESET_ALL}")
+        
+        menu_options = {
+            "1": ("🆕 Create", "create_product"),
+            "2": ("📜 Read", "view_product"),
+            "3": ("✏️ Update", "update_product"),
+            "4": ("🗑️ Delete", "delete_product"),
+            "5": ("📤 Export", "export_csv"),
+            "6": ("🔍 Search", "search_product"),
+            "8": ("🔙 Back", None)                 
+        }
 
-    new_value = input(f"Enter new value for {field}: ")
-    update(product_id, field, new_value)
+        for key, (label, perm) in menu_options.items():
+            if perm is None or perm in permissions:
+                print(f"{Fore.GREEN}{key}. {label}{Style.RESET_ALL}")
+            else:
+                print(f"{Fore.RED}{key}. {label}{Style.RESET_ALL}")
+
+        choice = input("Enter your choice: ")
+
+        if choice == "8":
+            clear_screen()
+            return
+        elif choice == "1" and "create_product" in permissions:
+            create_product_page()
+        elif choice == "2":
+            clear_screen()
+            read_products()
+        elif choice == "3" and "update_product" in permissions:
+            product_id = input("Enter Product ID to Update: ")
+            field = input("Enter Field to Update: ")
+            new_value = input("Enter New Value: ")
+            update_product(product_id, field, new_value)
+        elif choice == "4" and "delete_product" in permissions:
+            product_id = input("Enter Product ID to Delete: ")
+            delete_product(product_id)
+        elif choice == "5":
+            export_products_to_csv()
+        elif choice == "6":
+            product_id = input("Enter Product ID to View: ")
+            show_product_details(product_id)
+        else:
+            print(f"{Fore.RED}❌ Invalid choice!{Style.RESET_ALL}")
 
 def main():
     clear_screen()
-    print(f"{Fore.CYAN}Welcome to Workflows CLI{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}Welcome to Workflows{Style.RESET_ALL}")
     username = input("Username: ")
     password = getpass.getpass("Password: ")
 

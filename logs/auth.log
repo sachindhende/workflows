@@ -63,3 +63,108 @@ INFO:mysql.connector:plugin_name: caching_sha2_password
 INFO:mysql.connector:AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
 INFO:root:Successful login: admin
 INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: sachin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: sachin
+WARNING:root:Failed login attempt: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: sachin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+WARNING:root:Failed login attempt: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+WARNING:root:Failed login attempt: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+WARNING:root:Failed login attempt: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:mysql.connector:package: mysql.connector.plugins
+INFO:mysql.connector:plugin_name: caching_sha2_password
+INFO:mysql.connector:AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+INFO:root:Successful login: admin
+INFO:mysql.connector:package: mysql.connector.plugins
+INFO:mysql.connector:plugin_name: caching_sha2_password
+INFO:mysql.connector:AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: sachin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: ADMIN
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin
+INFO:root:Successful login: admin

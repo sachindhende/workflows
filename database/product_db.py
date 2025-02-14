@@ -1,82 +1,45 @@
 import mysql.connector
 import re
-import colorama
+import csv
 from colorama import Fore, Style
 from database.db_connector import get_db_connection
 
-# Validation Functions
+# Validation functions
 def validate_part_id(value):
-    """Validates part ID format: 'SM' followed by 7 digits (SMxxxxxxx)."""
     return bool(re.match(r'^SM\d{7}$', value))
 
 def validate_revision(value):
-    """Validates revision format: xxx.xx (e.g., 003.03)."""
     return bool(re.match(r'^\d{3}\.\d{2}$', value))
 
 def validate_ecu_version(value):
-    """Validates ECU Version format: xx.xx.xx"""
     return bool(re.match(r'^\d{2}\.\d{2}\.\d{2}$', value))
 
 def validate_checksum(value):
-    """Validates Checksum format: 8-character hexadecimal string."""
     return bool(re.match(r'^[0-9A-Fa-f]{8}$', value))
 
 def validate_proto_number(value):
-    """Validates Proto Number: 4-digit number (e.g., 1278)."""
     return bool(re.match(r'^\d{4}$', value))
 
-# Create Product
-def create(data):
-    """Validates and inserts a new product into the database with debugging output."""
-
-    # Validate part IDs
-    parts = ['fg_part', 'pcb_part', 'smd_top', 'smd_bottom', 'sw_wrapper']
-    for part in parts:
+def create_product(data):
+    errors = []
+    for part in ['fg_part', 'pcb_part', 'smd_top', 'smd_bottom', 'sw_wrapper']:
         if not validate_part_id(data[part]):
-            print(f"❌ Invalid {part.replace('_', ' ').title()}! Must follow format 'SMxxxxxxx'.")
-            input("\nPress Enter to continue...")  # Pause for user
-            return False
-
-    # Validate revision fields
-    revisions = ['fg_part_rev', 'pcb_part_rev', 'smd_top_rev', 'smd_bottom_rev', 'sw_wrapper_rev']
-    for rev in revisions:
+            errors.append(f"Invalid {part.replace('_', ' ').title()}! Must follow format 'SMxxxxxxx'.")
+    for rev in ['fg_part_rev', 'pcb_part_rev', 'smd_top_rev', 'smd_bottom_rev', 'sw_wrapper_rev']:
         if not validate_revision(data[rev]):
-            print(f"❌ Invalid {rev.replace('_', ' ').title()}! Must follow format 'xxx.xx'.")
-            input("\nPress Enter to continue...")  # Pause for user
-            return False
-
-    # Validate other fields
+            errors.append(f"Invalid {rev.replace('_', ' ').title()}! Must follow format 'xxx.xx'.")
     if not validate_ecu_version(data['ecu_version']):
-        print("❌ Invalid ECU Version! Must follow format 'xx.xx.xx'.")
-        input("\nPress Enter to continue...")  # Pause for user
-        return False
-
+        errors.append("Invalid ECU Version! Must follow format 'xx.xx.xx'.")
     if not validate_checksum(data['checksum']):
-        print("❌ Invalid Checksum! Must be 8-character hexadecimal (e.g., 77CB3BB0).")
-        input("\nPress Enter to continue...")  # Pause for user
+        errors.append("Invalid Checksum! Must be 8-character hexadecimal.")
+    if errors:
+        print("\n".join(errors))
         return False
-
-    if not validate_proto_number(data['proto_number']):
-        print("❌ Invalid Proto Number! Must be a 4-digit number (e.g., 1278).")
-        input("\nPress Enter to continue...")  # Pause for user
-        return False
-
-    # Ensure proto_number is converted to an integer if the database column expects it
-    proto_number_value = int(data['proto_number']) if data['proto_number'].isdigit() else None
-    if proto_number_value is None:
-        print("❌ Proto Number must be a valid integer!")
-        input("\nPress Enter to continue...")  # Pause for user
-        return False
-
-    # Ensure database connection
     conn = get_db_connection()
     if not conn:
-        print("❌ Database connection failed!")
-        input("\nPress Enter to continue...")  # Pause for user
+        print("Database connection failed!")
         return False
-
     cursor = conn.cursor()
-
     sql = """INSERT INTO products 
         (product_name, fg_part, fg_part_rev, pcb_part, pcb_part_rev, 
          smd_top, smd_top_rev, smd_bottom, smd_bottom_rev, 
@@ -91,33 +54,55 @@ def create(data):
         data['smd_bottom'].strip(), data['smd_bottom_rev'].strip(), 
         data['sw_wrapper'].strip(), data['sw_wrapper_rev'].strip(), 
         data['ecu_version'].strip(), data['checksum'].strip(), 
-        proto_number_value, data['status'].strip(), data['remark'].strip()
+        data['proto_number'].strip(), data['status'].strip(), data['remark'].strip()
     )
-
-    # Debug: Print SQL query and values before execution
-    print("\n🛠️ DEBUG: Attempting to execute SQL command:")
-    print(f"Query: {sql}")
-    print(f"Values: {values}")
-
     try:
         cursor.execute(sql, values)
         conn.commit()
-        print("✅ Product created successfully!")
-        return True  
+        print("Product created successfully!")
     except mysql.connector.Error as err:
-        print("\n❌ SQL Execution Error: ", err)
-        print("❌ SQL Query: ", sql)
-        print("❌ Values Sent: ", values)
-        input("\nPress Enter to continue...")  # Pause for user to read error
-        return False  
+        print(f"Error: {err}")
     finally:
         cursor.close()
         conn.close()
 
+def export_products_to_csv():
+    conn = get_db_connection()
+    if not conn:
+        print("Database connection failed!")
+        return
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM products")
+    products = cursor.fetchall()
+    if not products:
+        print("No products found.")
+        return
+    with open("products_export.csv", "w", newline="") as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow([desc[0] for desc in cursor.description])
+        writer.writerows(products)
+    print("Products exported successfully to 'products_export.csv'.")
+    cursor.close()
+    conn.close()
 
+def search_product():
+    conn = get_db_connection()
+    if not conn:
+        print("Database connection failed!")
+        return
+    search_term = input("Enter search term (Product Name or FG Part): ").strip()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM products WHERE product_name LIKE %s OR fg_part LIKE %s OR id LIKE %s", (f"%{search_term}%", f"%{search_term}%"))
+    results = cursor.fetchall()
+    if not results:
+        print("No matching products found.")
+    else:
+        for product in results:
+            print(f"ID: {product['id']}, Name: {product['product_name']}, FG Part: {product['fg_part']}, Status: {product['status']}")
+    cursor.close()
+    conn.close()
 
-# Read Products
-def read():
+def read_products():
     """Fetch and display all products from the database."""
     conn = get_db_connection()
     if not conn:
@@ -128,12 +113,12 @@ def read():
     cursor.execute("SELECT id, product_name, fg_part, fg_part_rev, proto_number, status FROM products")
     products = cursor.fetchall()
 
-    print(f"\n{Fore.CYAN}===== All Products ====={Style.RESET_ALL}")
+    print(f"\n{Fore.CYAN}********************************* All Products *********************************{Style.RESET_ALL}")
     
     if not products:
         print(f"{Fore.YELLOW}No products found.{Style.RESET_ALL}")
     else:
-        print(f"{Fore.GREEN}{'ID'.ljust(5)} | {'Product Name'.ljust(25)} | {'FG Part'.ljust(15)} | {'Rev'.ljust(5)} | {'Proto #'.ljust(6)} | {'Status'}{Style.RESET_ALL}")
+        print(f"{Fore.YELLOW}{'ID'.ljust(5)} | {'Product Name'.ljust(25)} | {'FG Part'.ljust(15)} | {'Rev   '.ljust(5)} | {' Proto'.ljust(6)} | {'Status'}{Style.RESET_ALL}")
         print("-" * 80)
         for product in products:
             print(f"{str(product['id']).ljust(5)} | {product['product_name'].ljust(25)} | {product['fg_part'].ljust(15)} | {product['fg_part_rev'].ljust(5)} | {product['proto_number'].ljust(6)} | {product['status']}")
@@ -141,12 +126,12 @@ def read():
     cursor.close()
     conn.close()
 
-    print(f"\n{Fore.GREEN}Press any key to go back...{Style.RESET_ALL}")
+    print(f"\n{Fore.GREEN}                             Press any key to go back...{Style.RESET_ALL}")
     input()
 
 
 # Update Product
-def update(product_id, field, new_value):
+def update_product(product_id, field, new_value):
     """Updates a specific field of a product, including revision fields and proto_number."""
     conn = get_db_connection()
     if not conn:
@@ -181,7 +166,7 @@ def update(product_id, field, new_value):
 
 
 # Delete Product
-def delete(product_id):
+def delete_product(product_id):
     """Deletes a product by ID."""
     conn = get_db_connection()
     if not conn:
@@ -217,4 +202,4 @@ def view_product(product_id):
     cursor.close()
     conn.close()
 
-    return product  # Return product details as a dictionary or None if not found
+    return product 
