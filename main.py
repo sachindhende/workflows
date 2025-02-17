@@ -23,6 +23,7 @@ def show_workflows_management_menu(permissions):
         menu_options = {
             "1": ("🔄 Workflows", "workflows"),
             "2": ("📦 Products", "products"),
+            "3": ("🛠️ Utilities", None),
             "7": ("⚙️ Settings", "settings"),
             "9": ("🚪 Logout", None)
         }
@@ -36,11 +37,13 @@ def show_workflows_management_menu(permissions):
         choice = input("Enter your choice: ")
 
         if choice == "1" and "workflows" in permissions:
-            print(f"{Fore.YELLOW}Workflows (Coming soon!){Style.RESET_ALL}")
+            print(f"{Fore.YELLOW}Workflows (Coming soon!){Style.RESET_ALL}")         
         elif choice == "2" and "products" in permissions:
             show_products_menu(permissions)
-        elif choice == "3" and "settings" in permissions:
-            print(f"{Fore.YELLOW}Settings (Coming soon!){Style.RESET_ALL}")
+        elif choice == "3" and "utilities" in permissions:
+            print(f"{Fore.YELLOW}Utilities (Coming soon!){Style.RESET_ALL}")
+        elif choice == "7" and "settings" in permissions:
+            print(f"{Fore.YELLOW}Settings (Coming soon!){Style.RESET_ALL}")    
         elif choice == "9":           
             print(f"{Fore.YELLOW}Goodbye!{Style.RESET_ALL}")
             clear_screen()
@@ -125,8 +128,8 @@ def show_products_menu(permissions):
             "2": ("📜 Read", "view_product"),
             "3": ("✏️ Update", "update_product"),
             "4": ("🗑️ Delete", "delete_product"),
-            "5": ("📤 Export", "export_csv"),
-            "6": ("🔍 Search", "search_product"),
+            "5": ("📤 Export", None),
+            "6": ("🔍 Search", None),
             "8": ("🔙 Back", None)                 
         }
 
