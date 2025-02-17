@@ -17,9 +17,6 @@ def validate_ecu_version(value):
 def validate_checksum(value):
     return bool(re.match(r'^[0-9A-Fa-f]{8}$', value))
 
-def validate_proto_number(value):
-    return bool(re.match(r'^\d{4}$', value))
-
 def create_product(data):
     errors = []
     for part in ['fg_part', 'pcb_part', 'smd_top', 'smd_bottom', 'sw_wrapper']:
@@ -44,8 +41,8 @@ def create_product(data):
         (product_name, fg_part, fg_part_rev, pcb_part, pcb_part_rev, 
          smd_top, smd_top_rev, smd_bottom, smd_bottom_rev, 
          sw_wrapper, sw_wrapper_rev, ecu_version, checksum, 
-         proto_number, status, remark) 
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+         status, remark) 
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
     
     values = (
         data['product_name'].strip(), data['fg_part'].strip(), data['fg_part_rev'].strip(), 
@@ -54,7 +51,7 @@ def create_product(data):
         data['smd_bottom'].strip(), data['smd_bottom_rev'].strip(), 
         data['sw_wrapper'].strip(), data['sw_wrapper_rev'].strip(), 
         data['ecu_version'].strip(), data['checksum'].strip(), 
-        data['proto_number'].strip(), data['status'].strip(), data['remark'].strip()
+        data['status'].strip(), data['remark'].strip()
     )
     try:
         cursor.execute(sql, values)
@@ -110,7 +107,7 @@ def read_products():
         return
 
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT id, product_name, fg_part, fg_part_rev, proto_number, status FROM products")
+    cursor.execute("SELECT id, product_name, fg_part, fg_part_rev, ecu_version, status FROM products")
     products = cursor.fetchall()
 
     print(f"\n{Fore.CYAN}********************************* All Products *********************************{Style.RESET_ALL}")
@@ -118,10 +115,10 @@ def read_products():
     if not products:
         print(f"{Fore.YELLOW}No products found.{Style.RESET_ALL}")
     else:
-        print(f"{Fore.YELLOW}{'ID'.ljust(5)} | {'Product Name'.ljust(25)} | {'FG Part'.ljust(15)} | {'Rev   '.ljust(5)} | {' Proto'.ljust(6)} | {'Status'}{Style.RESET_ALL}")
+        print(f"{Fore.YELLOW}{'ID'.ljust(5)} | {'Product Name'.ljust(25)} | {'FG Part'.ljust(15)} | {'Rev   '.ljust(5)} | {'ECU Ver'.ljust(6)}  | {'Status'}{Style.RESET_ALL}")
         print("-" * 80)
         for product in products:
-            print(f"{str(product['id']).ljust(5)} | {product['product_name'].ljust(25)} | {product['fg_part'].ljust(15)} | {product['fg_part_rev'].ljust(5)} | {product['proto_number'].ljust(6)} | {product['status']}")
+            print(f"{str(product['id']).ljust(5)} | {product['product_name'].ljust(25)} | {product['fg_part'].ljust(15)} | {product['fg_part_rev'].ljust(5)} | {product['ecu_version'].ljust(6)} | {product['status']}")
 
     cursor.close()
     conn.close()
@@ -145,10 +142,6 @@ def update_product(product_id, field, new_value):
 
     if field.endswith('_rev') and not validate_revision(new_value):
         print("❌ Invalid revision format! Must be xxx.xx")
-        return
-
-    if field == 'proto_number' and not validate_proto_number(new_value):
-        print("❌ Invalid Proto Number! Must be a 4-digit number.")
         return
 
     cursor = conn.cursor()

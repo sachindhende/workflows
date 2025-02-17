@@ -5,7 +5,7 @@ import csv
 from colorama import Fore, Style
 from auth.user_auth import authenticate_user
 from database.product_db import create_product, read_products, update_product, delete_product, view_product, export_products_to_csv, search_product
-from database.product_db import validate_part_id, validate_revision, validate_ecu_version, validate_checksum, validate_proto_number
+from database.product_db import validate_part_id, validate_revision, validate_ecu_version, validate_checksum
 
 colorama.init(autoreset=True)  # Initialize colors
 
@@ -30,7 +30,7 @@ def show_workflows_management_menu(permissions):
 
         for key, (label, perm) in menu_options.items():
             if perm is None or perm in permissions:
-                print(f"{Fore.GREEN}{key}. {label}{Style.RESET_ALL}")
+                print(f"{Fore.WHITE}{key}. {label}{Style.RESET_ALL}")
             else:
                 print(f"{Fore.RED}{key}. {label} (Restricted){Style.RESET_ALL}")
 
@@ -79,7 +79,6 @@ def create_product_page():
         "sw_wrapper_rev": get_valid_input("Enter SW Wrapper Revision (xxx.xx): ", validate_revision, "Invalid revision format! Must follow 'xxx.xx'."),
         "ecu_version": get_valid_input("Enter ECU Version (xx.xx.xx): ", validate_ecu_version, "Invalid ECU Version! Must follow format 'xx.xx.xx'."),
         "checksum": get_valid_input("Enter Checksum (xxxxxxxx): ", validate_checksum, "Invalid Checksum! Must be 8-character hexadecimal."),
-        "proto_number": get_valid_input("Enter Proto Number (xxxx): ", validate_proto_number, "Invalid Proto Number! Must be 4-digit decimal."),
         "status": input("Enter Status (Proto/Released): ").strip(),
         "remark": input("Enter Remark: ").strip()
     }
@@ -100,21 +99,20 @@ def show_product_details(product_id):
     fields = [
         "ID", "FG Part", "FG Part Revision", "PCB Part", "PCB Part Revision", 
         "SMD Top", "SMD Top Revision", "SMD Bottom", "SMD Bottom Revision",
-        "SW Wrapper", "SW Wrapper Revision", "ECU Version", "Checksum", 
-        "Proto Number", "Status", "Remark", "Created At"
+        "SW Wrapper", "SW Wrapper Revision", "ECU Version", "Checksum", "Status", "Remark", "Created At"
     ]
 
     values = [
         product['id'], product['fg_part'], product['fg_part_rev'], product['pcb_part'], product['pcb_part_rev'],
         product['smd_top'], product['smd_top_rev'], product['smd_bottom'], product['smd_bottom_rev'],
         product['sw_wrapper'], product['sw_wrapper_rev'], product['ecu_version'], product['checksum'],
-        product['proto_number'], product['status'], product['remark'], product['created_at']
+        product['status'], product['remark'], product['created_at']
     ]
 
     for field, value in zip(fields, values):
         print(f"{Fore.YELLOW}{field.ljust(20)}: {Style.RESET_ALL}{value}")
 
-    print(f"\n{Fore.GREEN}Press any key to go Back to Product Menu...{Style.RESET_ALL}")
+    print(f"\n{Fore.GREEN}                   Press any key to go Back to Product Menu...{Style.RESET_ALL}")
     input()
 
 
@@ -135,7 +133,7 @@ def show_products_menu(permissions):
 
         for key, (label, perm) in menu_options.items():
             if perm is None or perm in permissions:
-                print(f"{Fore.GREEN}{key}. {label}{Style.RESET_ALL}")
+                print(f"{Fore.WHITE}{key}. {label}{Style.RESET_ALL}")
             else:
                 print(f"{Fore.RED}{key}. {label}{Style.RESET_ALL}")
 
