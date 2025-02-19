@@ -47,7 +47,7 @@ def show_workflows_management_menu(permissions):
         elif choice == "9":           
             print(f"{Fore.YELLOW}Goodbye!{Style.RESET_ALL}")
             clear_screen()
-            break
+            main()
         else:
             print(f"{Fore.RED}❌ Invalid choice! Please select from the menu.{Style.RESET_ALL}")
 
@@ -177,6 +177,7 @@ def main():
         show_workflows_management_menu(permissions)
     else:
         print(f"{Fore.RED}Invalid credentials. Try again.{Style.RESET_ALL}")
+        main()
 
 if __name__ == "__main__":
     main()
